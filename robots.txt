@@ -1,0 +1,3 @@
+User-agent: *
+
+Sitemap: https://yanko96.github.io/sitemap.xml
