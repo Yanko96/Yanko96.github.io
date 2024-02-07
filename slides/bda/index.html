@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+
+  
+  
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Wowchemy 5.6.0 for Hugo">
+
+  
+    <link rel="manifest" href="/manifest.webmanifest">
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu57655349161825f6561971e3a26d7f39_2668_32x32_fill_lanczos_center_3.png">
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu57655349161825f6561971e3a26d7f39_2668_192x192_fill_lanczos_center_3.png">
+
+  <link rel="canonical" href="https://yanko96.github.io/slides/bda/">
+
+  <title>Slides | Yangzhe Kong</title>
+
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/theme/black.min.css">
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="/css/libs/chroma/dracula.min.css">
+  
+
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="/css/reveal_custom.min.css">
+  
+</head>
+<body>
+
+  
+<div class="reveal">
+  <div class="slides">
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+
+    
+    
+    
+    <section>
+    
+      <h1 id="bayesian-data-analysis-project-report">Bayesian Data Analysis Project Report</h1>
+<p>Yangzhe Kong, Ziqing Du</p>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="dataset-mtcars">Dataset: mtcars</h2>
+<p>The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models).</p>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>Miles per gallon  (a measure of fuel consumption)</li>
+<li>Number of cylinders</li>
+<li>Displacement (the total volume of the cylinders)</li>
+<li>Gross horsepower</li>
+<li>Rear axle ratio (related to towing capabilities)</li>
+<li>Weight</li>
+<li>Quarter mile time (how fast the car can traverse a quarter mile)</li>
+<li>Shape of the engine - straight vs V-shaped</li>
+<li>Transmission  - automatic vs manual</li>
+<li>Number of forward gears</li>
+<li>Number of carburetors</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="data-exploration">Data Exploration</h2>
+<p>First convert to metric units</p>
+<ul>
+<li>fuel consumption: From Miles per US gallon to Litres per 100 km</li>
+<li>Weight: From pound to ton</li>
+<li>Displacement: From inch to litre<br>
+Then normalize all data into the range $[0,1]$ except for engine type and transmission type
+as they are already in the range $[0,1]$</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<img src="data_exploration.png" width = "300" align=center />
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="model-formulation">Model Formulation</h2>
+<p>Since there’s no clear need for non-linearity as stated above, we can use bayesian linear regression, i.e.,
+$$y ∼ N(α + βX, σ²)$$</p>
+<p>where y is 1/4 mile time, X is the matrix of predictor variables and α, β are the intercept and regression coefficients, respectively</p>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<p><strong>Weakly informative priors</strong></p>
+<ul>
+<li>The rule of thumb for weakly informative distributions is that the standard deviation of the posterior distribution should be less than 0.1 times that of the prior.<br>
+alpha ~ cauchy(0,10);
+beta ~ student_t(3,0,2);
+sigma ~ normal(0,10);</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<p>Analysis Problem: What are the best variables that can be used to predict car performance?</p>
+<ul>
+<li>Variables:
+For multivariate model 1, horsepower, number of carburetors, car weight, transmission type and shape of the engine are the variables X.
+For multivariate model 2, displacement, car weight, shape of the engine, number of carburetors would be used as variables X.
+And for multivariate model 3, all variables will be used.</li>
+</ul>
+<img src="data_exploration_2.png" width = "300" align=center />
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-R" data-lang="R"><span class="line"><span class="cl"><span class="n">Separate</span> <span class="n">linear</span> <span class="n">modeling</span>
+</span></span><span class="line"><span class="cl"><span class="n">stan_separate_model</span> <span class="o">=</span> <span class="s">&#39;
+</span></span></span><span class="line"><span class="cl"><span class="s">data {
+</span></span></span><span class="line"><span class="cl"><span class="s">int&lt;lower=0&gt; N;
+</span></span></span><span class="line"><span class="cl"><span class="s">vector[N] x;
+</span></span></span><span class="line"><span class="cl"><span class="s">vector[N] y;
+</span></span></span><span class="line"><span class="cl"><span class="s">}
+</span></span></span><span class="line"><span class="cl"><span class="s">parameters {
+</span></span></span><span class="line"><span class="cl"><span class="s">real alpha;
+</span></span></span><span class="line"><span class="cl"><span class="s">real beta;
+</span></span></span><span class="line"><span class="cl"><span class="s">real&lt;lower=0&gt; sigma;
+</span></span></span><span class="line"><span class="cl"><span class="s">}
+</span></span></span><span class="line"><span class="cl"><span class="s">transformed parameters{
+</span></span></span><span class="line"><span class="cl"><span class="s">vector[N] mu;
+</span></span></span><span class="line"><span class="cl"><span class="s">mu = alpha + beta*x;
+</span></span></span><span class="line"><span class="cl"><span class="s">}
+</span></span></span><span class="line"><span class="cl"><span class="s">model {
+</span></span></span><span class="line"><span class="cl"><span class="s">alpha ~ cauchy(0,10);
+</span></span></span><span class="line"><span class="cl"><span class="s">beta ~ student_t(3,0,2);
+</span></span></span><span class="line"><span class="cl"><span class="s">sigma ~ normal(0, 10);
+</span></span></span><span class="line"><span class="cl"><span class="s">y ~ normal(mu, sigma);
+</span></span></span><span class="line"><span class="cl"><span class="s">}
+</span></span></span><span class="line"><span class="cl"><span class="s">// Log likelihoods genereated for LOO
+</span></span></span><span class="line"><span class="cl"><span class="s">generated quantities {
+</span></span></span><span class="line"><span class="cl"><span class="s">vector[N] log_lik;
+</span></span></span><span class="line"><span class="cl"><span class="s">for (i in 1:N)
+</span></span></span><span class="line"><span class="cl"><span class="s">log_lik[i] = normal_lpdf(y[i] |alpha+x[i]*beta , sigma);
+</span></span></span><span class="line"><span class="cl"><span class="s">}&#39;</span>  
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-R" data-lang="R"><span class="line"><span class="cl"><span class="n">stan_nlin_model1</span> <span class="o">=</span> <span class="s">&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="n">data</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">int</span><span class="o">&lt;</span><span class="n">lower</span><span class="o">=</span><span class="m">0</span><span class="o">&gt;</span> <span class="n">n</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">hp</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">wt</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">vs</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">am</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">carb</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">qsec</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">parameters</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">alpha</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_hp</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_wt</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_vs</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_am</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_carb</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span><span class="o">&lt;</span><span class="n">lower</span><span class="o">=</span><span class="m">0</span><span class="o">&gt;</span> <span class="n">sigma</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">transformed</span> <span class="n">parameters</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">mu</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">mu</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">+</span> <span class="n">beta_hp</span><span class="o">*</span><span class="n">hp</span> <span class="o">+</span> <span class="n">beta_wt</span><span class="o">*</span><span class="n">wt</span> <span class="o">+</span> <span class="n">beta_vs</span><span class="o">*</span><span class="n">vs</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_am</span><span class="o">*</span><span class="n">am</span> <span class="o">+</span> <span class="n">beta_carb</span><span class="o">*</span><span class="n">carb</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div>
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-R" data-lang="R"><span class="line"><span class="cl"><span class="n">model</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">alpha</span> <span class="o">~</span> <span class="nf">cauchy</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_wt</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_hp</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_am</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_vs</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_carb</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">sigma</span> <span class="o">~</span> <span class="nf">normal</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">10</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">qsec</span> <span class="o">~</span> <span class="nf">normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">//</span> <span class="n">Log</span> <span class="n">likelihoods</span> <span class="n">genereated</span> <span class="kr">for</span> <span class="n">LOO</span>
+</span></span><span class="line"><span class="cl"><span class="n">generated</span> <span class="n">quantities</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">log_lik</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kr">for</span> <span class="p">(</span><span class="n">i</span> <span class="kr">in</span> <span class="m">1</span><span class="o">:</span><span class="n">n</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">log_lik[i]</span> <span class="o">=</span> <span class="nf">normal_lpdf</span><span class="p">(</span><span class="n">qsec[i]</span> <span class="o">|</span><span class="n">mu[i]</span> <span class="p">,</span> <span class="n">sigma</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span><span class="s">&#39;</span><span class="err">  </span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-R" data-lang="R"><span class="line"><span class="cl"><span class="n">stan_nlin_model2</span> <span class="o">=</span> <span class="s">&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="n">data</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">int</span><span class="o">&lt;</span><span class="n">lower</span><span class="o">=</span><span class="m">0</span><span class="o">&gt;</span> <span class="n">n</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">disp</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">wt</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">vs</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">carb</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">qsec</span><span class="p">;}</span>
+</span></span><span class="line"><span class="cl"><span class="n">parameters</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">alpha</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_disp</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_wt</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_vs</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_carb</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span><span class="o">&lt;</span><span class="n">lower</span><span class="o">=</span><span class="m">0</span><span class="o">&gt;</span> <span class="n">sigma</span><span class="p">;}</span>
+</span></span><span class="line"><span class="cl"><span class="n">transformed</span> <span class="n">parameters</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">mu</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">mu</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">+</span> <span class="n">beta_disp</span><span class="o">*</span><span class="n">disp</span> <span class="o">+</span> <span class="n">beta_wt</span><span class="o">*</span><span class="n">wt</span> <span class="o">+</span><span class="n">beta_vs</span><span class="o">*</span><span class="n">vs</span> <span class="o">+</span> <span class="n">beta_carb</span><span class="o">*</span><span class="n">carb</span><span class="p">;}</span>
+</span></span><span class="line"><span class="cl"><span class="n">model</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">alpha</span> <span class="o">~</span> <span class="nf">cauchy</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_disp</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_wt</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_vs</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_carb</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">sigma</span> <span class="o">~</span> <span class="nf">normal</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">10</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">qsec</span> <span class="o">~</span> <span class="nf">normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div>
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-R" data-lang="R"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">//</span> <span class="n">Log</span> <span class="n">likelihoods</span> <span class="n">genereated</span> <span class="kr">for</span> <span class="n">LOO</span>
+</span></span><span class="line"><span class="cl"><span class="n">generated</span> <span class="n">quantities</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">log_lik</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kr">for</span> <span class="p">(</span><span class="n">i</span> <span class="kr">in</span> <span class="m">1</span><span class="o">:</span><span class="n">n</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">log_lik[i]</span> <span class="o">=</span> <span class="nf">normal_lpdf</span><span class="p">(</span><span class="n">qsec[i]</span> <span class="o">|</span><span class="n">mu[i]</span> <span class="p">,</span> <span class="n">sigma</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span><span class="s">&#39;  
+</span></span></span><span class="line"><span class="cl"><span class="s">stan_nlin_model3 = &#39;</span>
+</span></span><span class="line"><span class="cl"><span class="n">data</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">int</span><span class="o">&lt;</span><span class="n">lower</span><span class="o">=</span><span class="m">0</span><span class="o">&gt;</span> <span class="n">n</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">lphkm</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">cyl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">disp</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">hp</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">drat</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">wt</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">vs</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">am</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">gear</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">carb</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">qsec</span><span class="p">;}</span>
+</span></span><span class="line"><span class="cl"><span class="n">parameters</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">alpha</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_lphkm</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_cyl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_disp</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_hp</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_drat</span><span class="p">;</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-R" data-lang="R"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_wt</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_vs</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_am</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_gear</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span> <span class="n">beta_carb</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">real</span><span class="o">&lt;</span><span class="n">lower</span><span class="o">=</span><span class="m">0</span><span class="o">&gt;</span> <span class="n">sigma</span><span class="p">;}</span>  
+</span></span><span class="line"><span class="cl"><span class="n">transformed</span> <span class="n">parameters</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">mu</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">mu</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">+</span> <span class="n">beta_lphkm</span><span class="o">*</span><span class="n">lphkm</span> <span class="o">+</span> <span class="n">beta_cyl</span><span class="o">*</span> <span class="n">cyl</span> <span class="o">+</span> <span class="n">beta_disp</span> <span class="o">*</span> <span class="n">disp</span> <span class="o">+</span> <span class="n">beta_hp</span><span class="o">*</span><span class="n">hp</span> <span class="o">+</span> <span class="n">beta_drat</span><span class="o">*</span> <span class="n">drat</span> <span class="o">+</span> <span class="n">beta</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">model</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">alpha</span> <span class="o">~</span> <span class="nf">cauchy</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_lphkm</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_cyl</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_hp</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_drat</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_wt</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_am</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_vs</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_gear</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">beta_carb</span> <span class="o">~</span> <span class="nf">student_t</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">sigma</span> <span class="o">~</span> <span class="nf">normal</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">10</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">qsec</span> <span class="o">~</span> <span class="nf">normal</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">);}</span>
+</span></span><span class="line"><span class="cl"><span class="o">//</span> <span class="n">Log</span> <span class="n">likelihoods</span> <span class="n">genereated</span> <span class="kr">for</span> <span class="n">LOO</span>
+</span></span><span class="line"><span class="cl"><span class="n">generated</span> <span class="n">quantities</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">vector[n]</span> <span class="n">log_lik</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kr">for</span> <span class="p">(</span><span class="n">i</span> <span class="kr">in</span> <span class="m">1</span><span class="o">:</span><span class="n">n</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">log_lik[i]</span> <span class="o">=</span> <span class="nf">normal_lpdf</span><span class="p">(</span><span class="n">qsec[i]</span> <span class="o">|</span><span class="n">mu[i]</span> <span class="p">,</span> <span class="n">sigma</span><span class="p">);}</span><span class="s">&#39;</span>
+</span></span></code></pre></div>
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="convergence-diagnostics---rhat-values--ess">Convergence diagnostics - Rhat values / ESS</h2>
+<img src="rhat.png" width = "300" align=center />
+<img src="ess.png" width = "300" align=center />
+<img src="hmc.png" width = "300" align=center />
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="loo-cv">LOO-cv</h2>
+<img src="loo_cv_1.png" width = "300" align=center />
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<img src="loo_cv_2.png" width = "300" align=center />
+<img src="loo_cv_3.png" width = "300" align=center />
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="posterior-distributions">Posterior Distributions</h2>
+<img src="sigma.png" width = "300" align=center />
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<img src="alpha.png" width = "300" align=center />
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<img src="beta_1.png" width = "300" align=center />
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<img src="beta_2.png" width = "300" align=center />
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="quarter-mile-time-predictive-distributions">Quarter mile time predictive distributions</h2>
+<img src="qmpd.png" width = "300" align=center />
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="residuals">Residuals</h2>
+<img src="residuals.png" width = "300" align=center />
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<img src="residuls_2.png" width = "300" align=center />
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<img src="residuals_3.png" width = "300" align=center />
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="statistics-inference">Statistics Inference</h2>
+<img src="model1.png" width = "300" align=center />
+<img src="model2.png" width = "300" align=center />
+<img src="model3.png" width = "300" align=center />
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="sensitive-analysis">Sensitive Analysis</h2>
+<img src="alpha_dis.png" width = "300" align=center />
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<img src="qsec_dis.png" width = "300" align=center />
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="conclusions">Conclusions</h2>
+<p>Target: the performance of the car.
+Method: Parameter selection
+Models: three multivariate models</p>
+<p>The shape of the engine(straight vs V-shaped) and the weight parameter give much more support for cars traversing a quarter mile.</p>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="acknowledges">Acknowledges</h2>
+<p>Our main inspiration to explore linear regression model using mtcars dataset stemmed from [1]</p>
+<p>[1] Anton Mattsson, bdacars, (2018), GitHub repository, <a href="https://github.com/antonvsdata/bdacars" target="_blank" rel="noopener">https://github.com/antonvsdata/bdacars</a><br>
+[2] stan-dev, (2019), Prior Choice Recommendations, GitHub repository, <a href="https://github.com/stan-dev/stan/wiki/Prior-Choice-Recommendations" target="_blank" rel="noopener">https://github.com/stan-dev/stan/wiki/Prior-Choice-Recommendations</a></p>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="thank-you-for-your-time">Thank you for your time!</h2>
+<p><a href="https://docs.google.com/presentation/d/1VSKVRpWQ_tz7Gm_Zfj-_EpXvKwN-yLGmcZHwgClbbac/edit?usp=sharing" target="_blank" rel="noopener">complete sildes</a>
+<a href="https://github.com/Yanko96/CS-E5710-Bayesian-Data-Analysis/blob/master/Project/project.pdf" target="_blank" rel="noopener">complete report</a></p>
+
+    </section>
+    
+
+    
+    
+  </div>
+</div>
+
+
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/markdown/markdown.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/notes/notes.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/search/search.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/math/math.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/zoom/zoom.min.js" crossorigin="anonymous"></script>
+
+  
+  
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js-menu@2.1.0/plugin.js" integrity="sha256-M6JwAjnRAWmi+sbXURR/yAhWZKYhAw7YXnnLvIxrdGs=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js-menu@2.1.0/menu.js" integrity="sha256-l14dklFcW5mWar6w/9KaW0fWVerf3mYr7Wt0+rXzFAA=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js-menu@2.1.0/menu.css" integrity="sha256-0fU8HKLaTjgzfaV9CgSqbsN8ilA3zo6zK1M6rlgULd8=" crossorigin="anonymous">
+  
+
+  
+  
+
+  
+  
+  <script src="/js/wowchemy-slides.js"></script>
+
+</body>
+</html>

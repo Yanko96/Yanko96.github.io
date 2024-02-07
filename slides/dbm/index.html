@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+
+  
+  
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Wowchemy 5.6.0 for Hugo">
+
+  
+    <link rel="manifest" href="/manifest.webmanifest">
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu57655349161825f6561971e3a26d7f39_2668_32x32_fill_lanczos_center_3.png">
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu57655349161825f6561971e3a26d7f39_2668_192x192_fill_lanczos_center_3.png">
+
+  <link rel="canonical" href="https://yanko96.github.io/slides/dbm/">
+
+  <title>Slides | Yangzhe Kong</title>
+
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/theme/black.min.css">
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="/css/libs/chroma/dracula.min.css">
+  
+
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="/css/reveal_custom.min.css">
+  
+</head>
+<body>
+
+  
+<div class="reveal">
+  <div class="slides">
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+
+    
+    
+    
+    <section>
+    
+      <h1 id="deep-bolzmann-machine">Deep Bolzmann Machine</h1>
+<p>Yangzhe Kong</p>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="boltzmann-machines">Boltzmann Machines</h2>
+<ul>
+<li>Network is symmetrically connected</li>
+<li>Allow connection between visible and hidden units</li>
+<li>Each binary unit makes stochastic decision to be either on or off
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<figure  >
+  <div class="d-flex justify-content-center">
+    <div class="w-100" ><img alt="" srcset="
+               /slides/dbm/bm_hu50484dbee239a99cc75fe1459783159b_20032_9153d6cf64420178487e0026dd88d799.webp 400w,
+               /slides/dbm/bm_hu50484dbee239a99cc75fe1459783159b_20032_666ebb201dd3c910ff224373d9e25a58.webp 760w,
+               /slides/dbm/bm_hu50484dbee239a99cc75fe1459783159b_20032_1200x1200_fit_q75_h2_lanczos_3.webp 1200w"
+               src="/slides/dbm/bm_hu50484dbee239a99cc75fe1459783159b_20032_9153d6cf64420178487e0026dd88d799.webp"
+               width="329"
+               height="222"
+               loading="lazy" data-zoomable /></div>
+  </div></figure>
+</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>
+<p>The configuration of the network dictates its “energy”</p>
+</li>
+<li>
+<p>At the equilibrium state, the likelihood is defined as the exponentiated negative energy, known as the Boltzmann distribution</p>
+</li>
+<li>
+<p>The joint probability of the variable 𝑋 is derived by Boltzmann Distribution as follows, Where Z is the Partition Function.
+$$p(\mathbf{x}=\frac{1}{Z} exp(\frac{-E(\mathbf{x})}{T}))$$</p>
+</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>Energy Function is defined as</li>
+<li>$$E(\mathbf{x})\overset{\Delta}{=}E(\mathbf{X}=\mathbf{x})=-(\sum_{i&lt;j} w_{ij}x_ix_j+\sum_{i}b_ix_i)$$
+where $𝑤_𝑖𝑗$s are connection weights, $x_i\in{0,1}$ expresses the state of the variable and $𝑏_𝑖$ is the bias of variable $x_i$</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>Two problems:</li>
+</ul>
+<ol>
+<li>Given $w_{ij}$s and biases, how to achieve thermal equilibrium of $P(\mathbf{X})$ over all possible network config</li>
+<li>Given $\mathbf{X}$, learn $w_{ij}$s and biases to maximize $P(\mathbf{X})$</li>
+</ol>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<p>Problem 1: How to achieve equilibrium</p>
+<ul>
+<li>We can use Gibbs Sampling</li>
+<li>The conditional probability of the variable $x$ can be derived as follows
+
+$$
+p(x_i=1|\mathbf{X}_{\backslash i} )=\sigma(\frac{\sum_j(w_{ij} x_i+b_i)}{T})
+$$
+</li>
+</ul>
+
+$$
+p(x_i=0│\mathbf{X}_{\backslash i} )=1−p(x_i=0│\mathbf{X}_{\backslash i} )
+$$
+
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>The speed of convergence is related to the temperature 𝑇.</li>
+</ul>
+<p>When $T→\infty,  p(x_i=1│\mathbf{x}_(\backslash i) )→0.5$.<br>
+When $𝑇→0$,<br>
+
+$$
+if \Delta E_i(\mathbf{X}_(\backslash i) )>0,  p(x_i=1│\mathbf{X}_(\backslash i) )→1
+$$
+</p>
+
+$$
+if \Delta E_i(\mathbf{X}_(\backslash i) )<0,  p(x_i=1│\mathbf{X}_(\backslash i) ) →0
+$$
+
+<ul>
+<li>It means that when $𝑇→0$, the whole system change from being dynamic to deterministic.</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>We can use Simulated Annealing Algorithm to introduce some randomness to jump out from the local minimum by setting $x_i$ to 1 with a probability of
+
+$
+\sigma((\Delta E_i (\mathbf{X}_(\backslash i) ))/T)
+$
+
+when
+
+$
+\Delta E_i (\mathbf{X}_(\backslash i) )<0
+$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<figure  >
+  <div class="d-flex justify-content-center">
+    <div class="w-100" ><img alt=""
+           src="/slides/dbm/sa.gif"
+           loading="lazy" data-zoomable /></div>
+  </div></figure>
+</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<p>Problem 2: how to learn the parameters</p>
+<ul>
+<li>Without loss of generalty, let us assume that variables in Boltzmann Machine consist of visible variables $𝐯∈{𝟎,𝟏}^𝒎$  and hidden variables $h\in{0,1}^n$.</li>
+<li>Given a set of visible variables $\mathbf{D}={\mathbf{v} ̂^{((1) )},\mathbf{v} ̂^{((2) )},\cdots,\mathbf{v} ̂^{((𝑁) )} }$, our goal is to find the $𝑾$ that can maximize the log likelihood of the visible variables
+
+$$
+ℒ(𝒟│𝑊,b)=\frac{1}{𝑁} ∑_{(𝑛=1)^𝑁}log⁡(𝑝(𝐯 ̂^{((𝒏))} |𝑊,𝑏))
+$$
+</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>After some calculations, we can get the derivatives of $w_{ij}$  and $b_{i}$,</li>
+</ul>
+
+$$
+\frac{\nabla\mathcal{L}(\mathcal{D}│\mathbf{W},b)}{\nabla w_{ij}}=\lt x_ix_j \gt _{data}−\lt x_ix_j \gt _{model}
+$$
+
+
+$$
+\frac{\nabla\mathcal{L}(\mathcal{D}│\mathbf{W},b)}{\nabla b_i}=\lt x_ix_j \gt _{data}−<\lt x_ix_j \gt _{model}
+$$
+
+<ul>
+<li>If gradient ascent is used, update rules can be written like this(update rule for biases is similar)</li>
+</ul>
+
+$$
+w_{ij}\leftarrow w_{ij}+\alpha (\lt x_ix_j \gt _{data}− \lt x_ix_j \gt _{model})
+$$
+
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<p>Positive Phase:</p>
+<ul>
+<li>Clamp a data vector on the visible units and set the hidden units to random binary state.</li>
+<li>Update the hidden units one at a time until the network reaches thermal equilibrium at a temperature of 1.</li>
+<li>Sample $&lt;x_ix_j&gt;_{data}$ for every connected pair of units</li>
+<li>Repeat for all data vectors in the training set and average.</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<p>Negative Phase:</p>
+<ul>
+<li>Set all the units to random binary states</li>
+<li>Update the units one at a time until the network reaches thermal equilibrium at a temperature of 1.</li>
+<li>Sample $&lt;x_ix_j&gt;_{model}$ for every connected pair of units</li>
+<li>Repeat many times and average to get good estimates</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="restricted-boltzmann-machines">Restricted Boltzmann Machines</h2>
+<ul>
+<li>A simple <strong>unsupervised</strong> learning module;</li>
+<li>Only one layer of hidden units and one layer of visible units;</li>
+<li>No connection between hidden units nor between visible units;</li>
+<li>i.e. a special case of Boltzmann Machine;</li>
+<li>Edges are still undirected or bi-directional</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>e.g., an RBM with 2 visible and 3 hidden units:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<figure  >
+  <div class="d-flex justify-content-center">
+    <div class="w-100" ><img alt="" srcset="
+               /slides/dbm/rbm_hu6512e6923d50a5c5506f972ee9290cae_18579_90343e9101e391116b9497985f58a2a5.webp 400w,
+               /slides/dbm/rbm_hu6512e6923d50a5c5506f972ee9290cae_18579_2fd126970584f5a6aacb760727d79906.webp 760w,
+               /slides/dbm/rbm_hu6512e6923d50a5c5506f972ee9290cae_18579_1200x1200_fit_q75_h2_lanczos_3.webp 1200w"
+               src="/slides/dbm/rbm_hu6512e6923d50a5c5506f972ee9290cae_18579_90343e9101e391116b9497985f58a2a5.webp"
+               width="400"
+               height="224"
+               loading="lazy" data-zoomable /></div>
+  </div></figure>
+</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>Energy Function is defined as follows
+
+$$
+E(v,h)=−\sum_i a_iv_i−sum_i b_ih_i−\sum_i \sum_j v_iw_{ij}h_{j} \\ 
+=−\mathbf{a}^T\mathbf{v}−\mathbf{b}^T\mathbf{h}−\mathbf{v}^TW\mathbf{h}
+$$
+</li>
+<li>The joint probability $p(v,h)$ is defined as follows</li>
+</ul>
+
+$$
+p(\mathbf{v},\mathbf{h}) =\frac{1}{Z} exp⁡(−E(\mathbf{v},\mathbf{h}))=\frac{1}{Z} exp⁡(\mathbf{a}^T\mathbf{v})exp⁡(\mathbf{b}^T\mathbf{h})exp⁡(\mathbf{v}^TW\mathbf{h})
+$$
+
+<p>Where $Z=\sum_{\mathbf{v},\mathbf{h}} exp⁡(−E(\mathbf{v},\mathbf{h}))$ is the partition function</p>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>Good property of RBM: No connection between hidden units nor between visible units; thus given visible variables, hidden variables are independent with each other, and vice versa.
+
+$$
+p(v_i│\mathbf{V}_{\backslash i}, \mathbf{h})=p(v_i│\mathbf{h}); p(h_i│\mathbf{v},\mathbf{h}_{\backslash i})=p(v_i│\mathbf{v})
+$$
+</li>
+</ul>
+
+$$
+p(v_i=1│\mathbf{h})=σ(\sum_j w_{ij} h_i+a_i); p(ℎ_i=1│\mathbf{v})=\sigma(\sum_j w_{ij} v_i+b_i)
+$$
+
+<ul>
+<li>Still we have the same 2 problems as the Boltzmann Machines</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<p>Problem 1: How to reach equilibrium?</p>
+<ul>
+<li>Still we can use Gibbs Sampling
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<figure  >
+  <div class="d-flex justify-content-center">
+    <div class="w-100" ><img alt="" srcset="
+               /slides/dbm/rbm_p1_hub5bf880c579cebfd12d69e44869e077d_40814_df427ecd3c3302b38ac74b5ec4a6e805.webp 400w,
+               /slides/dbm/rbm_p1_hub5bf880c579cebfd12d69e44869e077d_40814_b4e2a782f2dfda78fc65e4ed9c10fb26.webp 760w,
+               /slides/dbm/rbm_p1_hub5bf880c579cebfd12d69e44869e077d_40814_1200x1200_fit_q75_h2_lanczos_3.webp 1200w"
+               src="/slides/dbm/rbm_p1_hub5bf880c579cebfd12d69e44869e077d_40814_df427ecd3c3302b38ac74b5ec4a6e805.webp"
+               width="760"
+               height="289"
+               loading="lazy" data-zoomable /></div>
+  </div></figure>
+</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<p>Sampling Procedure:</p>
+<ul>
+<li>(Given or) Randomly initiate a visible variable $\mathbf{v}_0$, calculate the probability distribution of hidden variable, and sample a hidden variable $\mathbf{h}_0$ from it.</li>
+<li>Based on $\mathbf{h}_0$, calculate the probability distribution of visible variable, and sample a hidden variable $\mathbf{v}_0$ from it.</li>
+<li>Iterate $t$ times and obtain $(\mathbf{v}_t,\mathbf{h}_t)$</li>
+<li>When $t→\infty$, $(\mathbf{v}_t,\mathbf{h}_t)$ obeys dirstribution of $p(\mathbf{v},\mathbf{h})$</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<p>Problem 2: How to learn the parameters?</p>
+<ul>
+<li>We can use a more efficient method called Contrastive Divergence (Hinton 2002) by exploiting the special structure of RBM.</li>
+<li>Change the objective function from likelihood function to Contrastive Divergence
+$$p^0||p_θ^\infty−p^1||p_θ^\infty$$</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<p>An approximate Maximum Likelihood Learning Algorithm</p>
+<ol>
+<li>Pick a data vector, $\mathbf{d}$, from the distribution $p_0$.</li>
+<li>Compute, for each expert separately, the posterior probability distribution over its latent (i.e., hidden) variables given the data vector, $\mathbf{d}$.</li>
+<li>Pick a value for each latent variable from its posterior distribution.</li>
+</ol>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ol start="4">
+<li>Given the chosen values of all the latent variables, compute the conditional distribution over all the visible variables by multiplying together the conditional distributions specified by each expert and renormalizing.</li>
+<li>Pick a value for each visible variable from the conditional distribution. These values constitute the reconstructed data vector, $\mathbf{d}^{reconstructed}$.</li>
+</ol>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<figure  >
+  <div class="d-flex justify-content-center">
+    <div class="w-100" ><img alt="" srcset="
+               /slides/dbm/rbm_learn1_hu5448488fab24550fbdf1de5029caf5f7_250754_e2905ecffccb5cfed9570964af469268.webp 400w,
+               /slides/dbm/rbm_learn1_hu5448488fab24550fbdf1de5029caf5f7_250754_6c5ddfc09f96d543b41c7f7898f2b828.webp 760w,
+               /slides/dbm/rbm_learn1_hu5448488fab24550fbdf1de5029caf5f7_250754_1200x1200_fit_q75_h2_lanczos_3.webp 1200w"
+               src="/slides/dbm/rbm_learn1_hu5448488fab24550fbdf1de5029caf5f7_250754_e2905ecffccb5cfed9570964af469268.webp"
+               width="760"
+               height="298"
+               loading="lazy" data-zoomable /></div>
+  </div></figure>
+</p>
+ <!-- <img src="rbm_learn1.png" width = "300" height = "200" alt="图片名称" align=center /> -->
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>A picture of contrastive divergence learning
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<figure  >
+  <div class="d-flex justify-content-center">
+    <div class="w-100" ><img alt="" srcset="
+               /slides/dbm/rbm_learn2_hu71694134a98c0cc7cd1a45c1f3ab862c_240025_4af8279a1e744814a6a3d13726b1570b.webp 400w,
+               /slides/dbm/rbm_learn2_hu71694134a98c0cc7cd1a45c1f3ab862c_240025_956627d27dca1ff8c45fa03f0d387b1d.webp 760w,
+               /slides/dbm/rbm_learn2_hu71694134a98c0cc7cd1a45c1f3ab862c_240025_1200x1200_fit_q75_h2_lanczos_3.webp 1200w"
+               src="/slides/dbm/rbm_learn2_hu71694134a98c0cc7cd1a45c1f3ab862c_240025_4af8279a1e744814a6a3d13726b1570b.webp"
+               width="760"
+               height="344"
+               loading="lazy" data-zoomable /></div>
+  </div></figure>
+</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>A good compromise between speed and correctness is to start with small weights and use CD1</li>
+</ul>
+<ol>
+<li>Once the weights grow, the Markov chain mixes more slowly so we use CD3.</li>
+<li>Once the weights have grow more we use CD10.</li>
+</ol>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>Applications: Restricted Boltzmann Machines For Collaborative Filtering (Salakhudinov et al. 2007)</li>
+<li>RBM can be used for Collaborative Filtering</li>
+<li>Wikipedia: In the newer, narrower sense, collaborative filtering is a method of making automatic predictions (filtering) about the interests of a user by collecting preferences or taste information from many users (collaborating).</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>
+<p>Fundamental ideas: If two items get similar rating patterns then they are probably similar If two users rated items in a similar fashion, then they will probably give similar ratings to an unrated item Properties of items are unknown</p>
+</li>
+<li>
+<p>Applications: Amazon (Customers Who Bought This Item Also Bought) Netflix Spotify
+<img src="rbm_cf.png" width = "300" align=center /></p>
+</li>
+</ul>
+<!-- ![](rbm_cf.png) -->
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>Make Visible Units K-nary
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<figure  >
+  <div class="d-flex justify-content-center">
+    <div class="w-100" ><img alt="" srcset="
+               /slides/dbm/rbm_cf_knary_hu1b0531eb543de599cbcbb82ebe0b44da_107448_8c5f4fd8e689ed3d811567193938700c.webp 400w,
+               /slides/dbm/rbm_cf_knary_hu1b0531eb543de599cbcbb82ebe0b44da_107448_4e9dee76f9ac151c47720bd26c2e51cf.webp 760w,
+               /slides/dbm/rbm_cf_knary_hu1b0531eb543de599cbcbb82ebe0b44da_107448_1200x1200_fit_q75_h2_lanczos_3.webp 1200w"
+               src="/slides/dbm/rbm_cf_knary_hu1b0531eb543de599cbcbb82ebe0b44da_107448_8c5f4fd8e689ed3d811567193938700c.webp"
+               width="760"
+               height="371"
+               loading="lazy" data-zoomable /></div>
+  </div></figure>
+</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>Learning and Prediction are similar to normal RBM.
+
+$$
+\Delta W_{ij}^k = \epsilon (\lt v_i^k h_j \gt _{data} - \lt v_i^k h_j \gt _T)
+$$
+</li>
+</ul>
+
+$$
+\hat{p}_j = p(h_j = 1 | \mathbf{V}) = \sigma (b_j + \sum_{i=1}^m \sum_{k=1}^{K} v_i^k W_{ij}^k)
+$$
+
+
+$$
+p(v_q^k=1| \hat{\mathbf{p}}) = \frac{exp(b^k + \sum_{j=1}^F \hat{p}_j W{qj}^k)}{\sum_{l=1}^K exp(b_p^l + \sum_{j=1}^F\hat{p}_j W{qj}^l)}
+$$
+
+<ul>
+<li>There are also some variations like RBM with Gaussian Hidden Units or Conditional RBM to choose.</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="deep-boltzmann-machines--deep-belief-nets">Deep Boltzmann Machines &amp; Deep Belief Nets</h2>
+<ul>
+<li>Deep Belief Network(DBN) have top two layers with undirected connections and lower layers have directed connections</li>
+<li>Deep Boltzmann Machine(DBM) have entirely undirected connections
+<img src="dbm_dbn.png" width = "300" align=center /></li>
+</ul>
+<!-- ![](dbm_dbn.png) -->
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<p>The wake-sleep algorithm: A learning algorithm for unsupervised neural networks (Hinton et al. 1995)</p>
+<ul>
+<li>Wake Phase: Use recognition weights to perform a bottom-up pass. Train the generative weights to reconstruct activities in each layer from the layer above</li>
+<li>Sleep Phase: Use generative weights to generate samples from the model. Train the recognition weights to reconstruct activities in each layer from the layer below</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<figure  >
+  <div class="d-flex justify-content-center">
+    <div class="w-100" ><img alt="" srcset="
+               /slides/dbm/wake_sleep_hu70b21463d7310830f71a834ca1b12556_67361_ab44d228c7067b90daba20a2bad9bf1e.webp 400w,
+               /slides/dbm/wake_sleep_hu70b21463d7310830f71a834ca1b12556_67361_e7e7e3d1b29ba1b78c3ab555915e8c9d.webp 760w,
+               /slides/dbm/wake_sleep_hu70b21463d7310830f71a834ca1b12556_67361_1200x1200_fit_q75_h2_lanczos_3.webp 1200w"
+               src="/slides/dbm/wake_sleep_hu70b21463d7310830f71a834ca1b12556_67361_ab44d228c7067b90daba20a2bad9bf1e.webp"
+               width="470"
+               height="505"
+               loading="lazy" data-zoomable /></div>
+  </div></figure>
+</p>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<ul>
+<li>An surprising observation: If we train an RBM, and use the output of the previous RBM as the input of the next RBM, and stack them together, what we get at last is not a multi-layer Boltzmann Machine, it’s actually a DBN!</li>
+</ul>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<p>This leads to an efficient way to train DBN (Hinton et al. 2006)</p>
+<ol>
+<li>Training a deep network by stacking RBMs (adding another layer of features each time can improve the variational lower bound)</li>
+<li>Fine-tuning with a contrastive version of the wake-sleep algorithm</li>
+</ol>
+<ul>
+<li>Do a stochastic bottom-up pass</li>
+<li>Do a few iterations of sampling in the top level RBM</li>
+<li>Do a stochastic top-down pass</li>
+</ul>
+<ol start="3">
+<li>Discriminative Fine-tuning (when training a discriminative model)</li>
+</ol>
+
+    </section>
+    
+
+    
+    
+    
+    <section>
+    
+      
+<h2 id="thank-you-for-your-time">Thank you for your time!</h2>
+<!-- [complete sildes]() -->
+
+    </section>
+    
+
+    
+    
+  </div>
+</div>
+
+
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/markdown/markdown.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/notes/notes.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/search/search.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/math/math.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/plugin/zoom/zoom.min.js" crossorigin="anonymous"></script>
+
+  
+  
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js-menu@2.1.0/plugin.js" integrity="sha256-M6JwAjnRAWmi+sbXURR/yAhWZKYhAw7YXnnLvIxrdGs=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js-menu@2.1.0/menu.js" integrity="sha256-l14dklFcW5mWar6w/9KaW0fWVerf3mYr7Wt0+rXzFAA=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js-menu@2.1.0/menu.css" integrity="sha256-0fU8HKLaTjgzfaV9CgSqbsN8ilA3zo6zK1M6rlgULd8=" crossorigin="anonymous">
+  
+
+  
+  
+
+  
+  
+  <script src="/js/wowchemy-slides.js"></script>
+
+</body>
+</html>

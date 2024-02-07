@@ -5,12 +5,26 @@
     <link>https://yanko96.github.io/post/</link>
       <atom:link href="https://yanko96.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><lastBuildDate>Fri, 09 Sep 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://yanko96.github.io/media/icon_hu57655349161825f6561971e3a26d7f39_2668_512x512_fill_lanczos_center_3.png</url>
       <title>Posts</title>
       <link>https://yanko96.github.io/post/</link>
     </image>
+    
+    <item>
+      <title>Research Proposal on Trajectory Prediction</title>
+      <link>https://yanko96.github.io/post/trajectory_prediction_rp/</link>
+      <pubDate>Fri, 09 Sep 2022 00:00:00 +0000</pubDate>
+      <guid>https://yanko96.github.io/post/trajectory_prediction_rp/</guid>
+      <description>&lt;p&gt;A PDF version is shown below. Or you can download it &lt;a href=&#34;rp.pdf&#34; target=&#34;_blank&#34;&gt;here&lt;a&gt;.
+&lt;object data=&#34;rp.pdf&#34; type=&#34;application/pdf&#34; width=&#34;700px&#34; height=&#34;700px&#34;&gt;
+&lt;embed src=&#34;rp.pdf&#34;&gt;
+&lt;p&gt;This browser does not support PDFs. Please download the PDF to view it: &lt;a href=&#34;rp.pdf&#34;&gt;Download PDF&lt;/a&gt;.&lt;/p&gt;
+&lt;/embed&gt;
+&lt;/object&gt;&lt;/p&gt;
+</description>
+    </item>
     
   </channel>
 </rss>
